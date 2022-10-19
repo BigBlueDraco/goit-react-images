@@ -5,7 +5,7 @@ import { Modal } from 'components/Modal/Modal';
 import PropTypes from 'prop-types';
 import { useEffect } from 'react';
 import { useState } from 'react';
-import { getPictures } from 'services/pixabayAPI';
+import { pixabayAPI } from 'services/pixabayAPI';
 
 export const ImageGallery = ({ query, perPage = 12 }) => {
   // const [query, setQuery] = useState(props.query);
@@ -32,7 +32,7 @@ export const ImageGallery = ({ query, perPage = 12 }) => {
   const loadPictures = async () => {
     setIsLoading(true);
     try {
-      const resp = await getPictures(query, page, perPage);
+      const resp = await pixabayAPI.fetchImg(query, page);
       page === 1 ? setPics([...resp.hits]) : setPics([...pics, ...resp.hits]);
       setTotalHits(resp.totalHits);
     } catch (error) {
