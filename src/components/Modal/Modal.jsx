@@ -1,4 +1,3 @@
-import React, { Component } from 'react';
 import { useEffect } from 'react';
 
 export const Modal = props => {
@@ -7,7 +6,7 @@ export const Modal = props => {
     return () => {
       window.removeEventListener('keydown', handlerKey);
     };
-  }, []);
+  });
   const handlerKey = e => {
     if (e.key !== 'Escape') return;
     props.closeModal(e);

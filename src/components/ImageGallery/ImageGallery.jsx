@@ -27,7 +27,7 @@ export const ImageGallery = ({ query, perPage = 12 }) => {
 
   useEffect(() => {
     loadPictures();
-  }, [query, page]);
+  });
 
   const loadPictures = async () => {
     setIsLoading(true);
