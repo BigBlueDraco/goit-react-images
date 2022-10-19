@@ -1,8 +1,8 @@
 import PropTypes from 'prop-types';
 
-export const Button = func => {
+export const Button = ({ func }) => {
   return (
-    <button className="Button" onClick={e => this.props.func(e)}>
+    <button className="Button" onClick={e => func(e)}>
       Load more
     </button>
   );

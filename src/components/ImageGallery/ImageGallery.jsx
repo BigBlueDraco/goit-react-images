@@ -1,96 +1,70 @@
 import { Button } from 'components/Button/Button';
 import ImageGalleryItem from 'components/ImageGalleryItem/ImageGalleryItem';
 import Loader from 'components/Loader/Loader';
-import Modal from 'components/Modal/Modal';
+import { Modal } from 'components/Modal/Modal';
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
+import { useEffect } from 'react';
+import { useState } from 'react';
 import { getPictures } from 'services/pixabayAPI';
 
-export default class ImageGallery extends Component {
-  //   static propTypes = { second: third };
-  constructor(props) {
-    super(props);
-    this.state = {
-      query: props.query || '',
-      pics: [],
-      isLoading: false,
-      error: null,
-      page: 1,
-      per_page: props.per_page || 12,
-      modalIsOpen: false,
-      largeImageURL: '',
-      totalHits: 0,
-    };
-  }
-  toggleModalWindow = url => {
-    this.setState(prevState => ({
-      modalIsOpen: !prevState.modalIsOpen,
-      largeImageURL: url,
-    }));
+export const ImageGallery = ({ query, perPage = 12 }) => {
+  // const [query, setQuery] = useState(props.query);
+  const [pics, setPics] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [page, setPage] = useState(1);
+  // const [perPage, setPerPage] = useState(props.per_page || 12);
+  const [modalIsOpen, setModalIsOpen] = useState(false);
+  const [largeImageURL, setLargeImageURL] = useState('');
+  const [totalHits, setTotalHits] = useState(0);
+  const toggleModalWindow = url => {
+    setModalIsOpen(!modalIsOpen);
+    setLargeImageURL(url);
   };
-  loadMore = () => {
-    this.setState(prevState => ({ page: prevState.page + 1 }));
+  const loadMore = e => {
+    setPage(page + 1);
   };
-  async componentDidUpdate(_, prevState) {
-    if (this.state.query !== this.props.query) {
-      this.setState({ query: this.props.query, page: 1 });
-    }
-    if (this.state.page !== prevState.page || this.state.query !== prevState.query) {
-      this.loadPictures();
-    }
-  }
 
-  async loadPictures() {
-    const { page, query, per_page } = this.state;
-    this.setState({ isLoading: true });
+  useEffect(() => {
+    loadPictures();
+  }, [query, page]);
+
+  const loadPictures = async () => {
+    setIsLoading(true);
     try {
-      const resp = await getPictures(query, page, per_page);
-      this.setState(prevState => {
-        return {
-          pics: this.state.page === 1 ? [...resp.hits] : [...prevState.pics, ...resp.hits],
-          totalHits: resp.totalHits,
-        };
-      });
+      const resp = await getPictures(query, page, perPage);
+      page === 1 ? setPics([...resp.hits]) : setPics([...pics, ...resp.hits]);
+      setTotalHits(resp.totalHits);
     } catch (error) {
-      this.setState({ error: error.message });
+      setError(error.message);
     } finally {
-      this.setState({ isLoading: false });
+      setIsLoading(false);
     }
-  }
+  };
 
-  async componentDidMount() {
-    this.loadPictures();
-  }
+  return (
+    <>
+      {error && <span>{error}</span>}
 
-  render() {
-    return (
-      <>
-        {this.state.error && <span>{this.state.error}</span>}
-
-        <ul className="ImageGallery">
-          {this.state.pics.map(({ webformatURL, largeImageURL, tags }) => (
-            <ImageGalleryItem
-              key={webformatURL}
-              webformatURL={webformatURL}
-              largeImageURL={largeImageURL}
-              tags={tags}
-              openLargeImage={this.toggleModalWindow}
-            />
-          ))}
-        </ul>
-        {this.state.isLoading && <Loader />}
-        {this.state.page * this.state.per_page < this.state.totalHits && !this.state.isLoading && (
-          <Button func={this.loadMore}></Button>
-        )}
-        {this.state.modalIsOpen && (
-          <Modal largeImageURL={this.state.largeImageURL} closeModal={this.toggleModalWindow} />
-        )}
-      </>
-    );
-  }
-}
+      <ul className="ImageGallery">
+        {pics.map(({ webformatURL, largeImageURL, tags }) => (
+          <ImageGalleryItem
+            key={webformatURL}
+            webformatURL={webformatURL}
+            largeImageURL={largeImageURL}
+            tags={tags}
+            openLargeImage={toggleModalWindow}
+          />
+        ))}
+      </ul>
+      {isLoading && <Loader />}
+      {page * perPage < totalHits && !isLoading && <Button func={loadMore}></Button>}
+      {modalIsOpen && <Modal largeImageURL={largeImageURL} closeModal={toggleModalWindow} />}
+    </>
+  );
+};
 
 ImageGallery.propTypes = {
   query: PropTypes.string,
-  per_page: PropTypes.number,
+  perPage: PropTypes.number,
 };
