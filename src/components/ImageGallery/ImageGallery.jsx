@@ -27,7 +27,7 @@ export const ImageGallery = ({ query, perPage = 12 }) => {
 
   useEffect(() => {
     loadPictures();
-  });
+  }, [query, page]);
 
   const loadPictures = async () => {
     setIsLoading(true);
@@ -45,6 +45,7 @@ export const ImageGallery = ({ query, perPage = 12 }) => {
   return (
     <>
       {error && <span>{error}</span>}
+      {!pics[0] && <span>No pictures found</span>}
 
       <ul className="ImageGallery">
         {pics.map(({ webformatURL, largeImageURL, tags }) => (
